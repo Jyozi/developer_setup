@@ -1,13 +1,16 @@
-#!/bin/sh
+#!/bin/sh -e
+#set -e
 
-#mv config ~/.config
-#mv bash_profile ~/.bash_profile
+cp -r nvim ~/.config/nvim
+cp -r .bash_profile ~/.bash_profile
+cp -r .bashrc ~/.bashrc
+source ~/.bash_profile
 
 if [ -z `uname | grep "Drawin"` ]; then
     # For Mac
     brew install neovim pyenv readline xz
     xcode-select --install
-    sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
+    #sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS*.pkg -target /
     pyenv install 3.6.1
     pyenv global 3.6.1
     pip install pipenv neovim isort jedi autopep8
