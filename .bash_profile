@@ -1,13 +1,20 @@
-source ~/.bashrc
+# .bash_profile
 export LSCOLORS=Gxfxcxdxcxegedabagacad
-export PS1="\u@\h:\w \\$ \[\e[0;37m\]"
-
-export PATH=/usr/local/Cellar/openssl/1.0.2o_1/bin:/Users/jyozi/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
-
-# For 文字化け
+export PS1="[\u@\h \w]$ \[\e[0;37m\]"
 export LANG=ja_JP.UTF-8
 
-PYENV_ROOT=~/.pyenv
-export PATH=$PATH:$PYENV_ROOT/bin
-eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+    . ~/.bashrc
+fi
+# User specific environment and startup programs
+PATH=$PATH:$HOME/bin
+
+export PATH
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+if command -v pyenv 1>/dev/null 2>&1; then
+  eval "$(pyenv init -)"
+fi
+
+
