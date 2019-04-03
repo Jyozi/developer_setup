@@ -5,52 +5,257 @@ repo = 'Shougo/dein.vim'
 repo = 'Shougo/vimproc.vim'
 
 [[plugins]]
-repo = 'w0rp/ale'
-hook_add = '''
-let g:ale_set_loclist = 0
-let g:ale_set_quickfix = 1
-let g:ale_open_list = 1
-let g:ale_echo_msg_format = '[%linter%][%severity%][%code%] %s'
-let g:ale_sign_column_always = 1
-nnoremap <silent> <C-p> :<C-u>ALEPreviousWrap<CR>
-nnoremap <silent> <C-n> :<C-u>ALENextWrap<CR>
-'''
-
-[[plugins]]
 repo = 'Shougo/deoplete.nvim'
 hook_add = '''
 let g:deoplete#enable_at_startup = 1
 '''
 
 [[plugins]]
-repo = 'scrooloose/nerdtree'
+repo = 'w0rp/ale'
+hook_add = '''
+let g:ale_open_list = 1
+let g:ale_echo_msg_format = '[%linter%][%severity%][%code%] %s'
+let g:ale_sign_column_always = 1
+let g:ale_completion_enabled = 0
+let g:ale_fix_on_save = 1
+let g:ale_linters = {
+  \ 'python': ['pylint', 'flake8'],
+  \ 'go': ['gofmt', 'govet', 'bingo'],
+  \ 'javascript':  ['tsserver', 'eslint'],
+  \ 'javascript.jsx':  ['tsserver', 'eslint'],
+  \ 'typescript':  ['tsserver', 'eslint'],
+  \ 'typescript.tsx':  ['tsserver', 'eslint'],
+  \}
+let g:ale_fixers = {
+  \ '*': ['remove_trailing_lines', 'trim_whitespace'],
+  \ 'python': ['autopep8', 'isort'],
+  \ 'javascript': ['eslint'],
+  \ 'javascript.jsx': ['eslint'],
+  \ 'typescript': ['eslint'],
+  \ 'typescript.tsx': ['eslint'],
+  \ 'go': ['gofmt'],
+  \}
+let g:ale_python_pylint_change_directory = 0
+let g:ale_pattern_options = {
+  \ '\.eslintrc.js$': {'ale_enabled': 0},
+  \ '\.md$': {'ale_enabled': 0},
+  \ 'node_modules/.*$': {'ale_enabled': 0},
+  \ 'dist/.*$': {'ale_enabled': 0},
+  \}
+nnoremap <silent> <S-f> :<C-u>ALEFix<CR>
+nnoremap <silent> <C-p> :<C-u>ALEPreviousWrap<CR>
+nnoremap <silent> <C-n> :<C-u>ALENextWrap<CR>
+hi ALEError cterm=bold ctermfg=white ctermbg=red
+'''
 
+[[plugins]]
+repo = 'prabirshrestha/async.vim'
+
+[[plugins]]
+repo = 'prabirshrestha/asyncomplete.vim'
+depends = ['async.vim']
+hook_add = '''
+let g:asyncomplete_smart_completion = 1
+let g:asyncomplete_auto_popup = 1
+augroup AsynC
+  autocmd!
+  autocmd CompleteDone * if pumvisible() == 0 | pclose | endif
+augroup END
+'''
+
+[[plugins]]
+repo = 'prabirshrestha/asyncomplete-file.vim'
+depends = ['asyncomplete.vim']
+hook_add = '''
+augroup AsynCFile
+  autocmd!
+  autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#file#get_source_options({
+    \ 'name': 'file',
+    \ 'whitelist': ['*'],
+    \ 'priority': 10,
+    \ 'completor': function('asyncomplete#sources#file#completor')
+    \ }))
+augroup END
+'''
+
+[[plugins]]
+repo = 'prabirshrestha/vim-lsp'
+depends = 'async.vim'
+on_ft = ['go', 'python', 'javascript', 'javascript.jsx', 'typescript', 'typescript.tsx']
+hook_add = '''
+if executable('bingo')
+  augroup LspGo
+    autocmd!
+    autocmd User lsp_setup call lsp#register_server({
+        \ 'name': 'go',
+        \ 'cmd': {server_info->['bingo', '-mode', 'stdio']},
+        \ 'whitelist': ['go'],
+        \ })
+    autocmd FileType go setlocal omnifunc=lsp#complete
+  augroup END
+endif
+if executable('pyls')
+  augroup LspPython
+    autocmd!
+    autocmd User lsp_setup call lsp#register_server({
+        \ 'name': 'python',
+        \ 'cmd': {server_info->['pyls']},
+        \ 'whitelist': ['python'],
+        \ })
+    autocmd FileType python setlocal omnifunc=lsp#complete
+  augroup END
+endif
+if executable('typescript-language-server')
+  augroup LspTS
+    autocmd User lsp_setup call lsp#register_server({
+      \ 'name': 'ts',
+      \ 'cmd': {server_info->[&shell, &shellcmdflag, 'typescript-language-server --stdio']},
+      \ 'root_uri':{server_info->lsp#utils#path_to_uri(lsp#utils#find_nearest_parent_file_directory(lsp#utils#get_buffer_path(), 'tsconfig.json'))},
+      \ 'whitelist': ['typescript', 'typescript.tsx']
+      \ })
+    autocmd User lsp_setup call lsp#register_server({
+      \ 'name': 'js',
+      \ 'cmd': { server_info->[&shell, &shellcmdflag, 'typescript-language-server --stdio']},
+      \ 'root_uri': { server_info->lsp#utils#path_to_uri(lsp#utils#find_nearest_parent_directory(lsp#utils#get_buffer_path(), '.git/..'))},
+      \ 'whitelist': ['javascript', 'javascript.jsx']
+      \ })
+    autocmd FileType javascript setlocal omnifunc=lsp#complete
+    autocmd FileType javascript.jsx setlocal omnifunc=lsp#complete
+    autocmd FileType typescript setlocal omnifunc=lsp#complete
+    autocmd FileType typescript.tsx setlocal omnifunc=lsp#complete
+  augroup END
+endif
+nnoremap [lsp] <Nop>
+nmap ,s [lsp]
+vmap ,s [lsp]
+nnoremap [lsp]a :<C-u>LspCodeAction<CR>
+nnoremap [lsp]D :<C-u>LspDeclaration<CR>
+nnoremap [lsp]d :<C-u>LspDefinition<CR>
+nnoremap [lsp]q :<C-u>LspDocumentDiagnostics<CR>
+nnoremap [lsp]r :<C-u>LspRename<CR>
+nnoremap [lsp]R :<C-u>LspReferences<CR>
+nnoremap [lsp]p :<C-u>LspPreviousError<CR>
+nnoremap [lsp]n :<C-u>LspNextError<CR>
+nnoremap [lsp]f :<C-u>LspDocumentFormat<CR>
+vnoremap [lsp]f :<C-u>LspDocumentRangeFormat<CR>
+nnoremap [lsp]t :<C-u>LspTypeDefinition<CR>
+nnoremap [lsp]h :<C-u>LspHover<CR>
+nnoremap [lsp]s :<C-u>LspDocumentSymbol<CR>
+nnoremap [lsp]S :<C-u>LspWorkspaceSymbol<CR>
+nnoremap [lsp]? :<C-u>LspStatus<CR>
+let g:lsp_diagnostics_enabled = 0
+'''
+
+[[plugins]]
+repo = 'prabirshrestha/asyncomplete-lsp.vim'
+depends = ['asyncomplete.vim', 'vim-lsp']
+
+[[plugins]]
+repo = 'leafgarland/typescript-vim'
+on_ft = ['typescript']
+
+# 統合インターファイス
 [[plugins]]
 repo = 'Shougo/unite.vim'
 
+# unite拡張
 [[plugins]]
 repo = 'Shougo/neomru.vim'
 hook_add = '''
 " 入力モードで開始する
-let g:unite_enable_start_insert=1
+let g:unite_enable_start_insert=0
+
+nmap s <Nop>
+nmap sj <C-w>j
+nmap sk <C-w>k
+nmap sl <C-w>l
+nmap sh <C-w>h
+nmap sJ <C-w>J
+nmap sK <C-w>K
+nmap sL <C-w>L
+nmap sH <C-w>H
+nmap sn gt
+nmap sp gT
+nmap sr <C-w>r
+nmap s= <C-w>=
+nmap sw <C-w>w
+nmap so <C-w>_<C-w>|
+nmap sO <C-w>=
+
+" window size
+nmap s> <C-w>>
+nmap s< <C-w><
+nmap s+ <C-w>+
+nmap s- <C-w>-
+
+nmap sN :<C-u>bn<CR>
+nmap sP :<C-u>bp<CR>
+nmap st :<C-u>tabnew<CR>
+nmap sT :<C-u>Unite tab<CR>
+nmap ss :<C-u>sp<CR>
+nmap sv :<C-u>vs<CR>
+nmap sq :<C-u>q<CR>
+nmap sQ :<C-u>bd<CR>
 " バッファ一覧
-noremap <C-P> :Unite buffer<CR>
-" ファイル一覧
-noremap <C-N> :Unite -buffer-name=file file<CR>
-" 最近使ったファイルの一覧
-noremap <C-Z> :Unite file_mru<CR>
-" sourcesを「今開いているファイルのディレクトリ」とする
-noremap :uff :<C-u>UniteWithBufferDir file -buffer-name=file<CR>
-" ウィンドウを分割して開く
-au FileType unite nnoremap <silent> <buffer> <expr> <C-J> unite#do_action('split')
-au FileType unite inoremap <silent> <buffer> <expr> <C-J> unite#do_action('split')
-" ウィンドウを縦に分割して開く
-au FileType unite nnoremap <silent> <buffer> <expr> <C-K> unite#do_action('vsplit')
-au FileType unite inoremap <silent> <buffer> <expr> <C-K> unite#do_action('vsplit')
-" ESCキーを2回押すと終了する
-au FileType unite nnoremap <silent> <buffer> <ESC><ESC> :q<CR>
-au FileType unite inoremap <silent> <buffer> <ESC><ESC> <ESC>:q<CR>
+nmap sb :<C-u>Unite buffer<CR>
+" 現在のディレクトリのファイル一覧
+nmap sf :<C-u>Unite -buffer-name=file file<CR>
+" 最近使ったファイル一覧
+nmap sz :<C-u>Unite file_mru<CR>
+
+nmap nt :<C-u>NERDTree<CR>
+
+"" ESCキーを2回押すと終了する
+"au FileType unite nmap <silent> <buffer> <ESC><ESC> :q<CR>
+"au FileType unite inoremap <silent> <buffer> <ESC><ESC> <ESC>:q<CR>
 '''
 
+# 木表示
+[[plugins]]
+repo = 'scrooloose/nerdtree'
+
+# tab変換の動作を逆に
 [[plugins]]
 repo = 'ervandew/supertab'
+
+# airline themes
+[[plugins]]
+repo = 'vim-airline/vim-airline-themes'
+
+# icon表示
+[[plugins]]
+repo = 'ryanoasis/vim-devicons'
+
+[[plugins]]
+repo = 'vim-airline/vim-airline'
+hook_add = '''
+let g:airline_theme = 'dark'
+let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#left_sep = ' '
+let g:airline#extensions#tabline#left_alt_sep = '|'
+let g:airline#extensions#tabline#formatter = 'default'
+
+set laststatus=2
+let g:airline#extensions#branch#enabled = 1
+let g:airline#extensions#wordcount#enabled = 0
+let g:airline#extensions#default#layout = [['a', 'b', 'c'], ['x', 'y', 'z']]
+let g:airline_section_c = '%t'
+let g:airline_section_x = '%{&filetype}'
+let g:airline_section_z = '%3l:%2v %{airline#extensions#ale#get_warning()} %{airline#extensions#ale#get_error()}'
+let g:airline#extensions#ale#error_symbol = ' '
+let g:airline#extensions#ale#warning_symbol = ' '
+let g:airline#extensions#default#section_truncate_width = {}
+let g:airline#extensions#whitespace#enabled = 1
+'''
+
+# vim内git
+[[plugins]]
+repo = 'tpope/vim-fugitive'
+
+# 差分自動表示
+[[plugins]]
+repo = 'airblade/vim-gitgutter'
+
+# 行末半角表示
+[[plugins]]
+repo = 'bronson/vim-trailing-whitespace'

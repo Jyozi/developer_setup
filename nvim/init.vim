@@ -35,13 +35,34 @@ set encoding=utf-8
 
 set clipboard+=unnamedplus
 
+" move with insert mode
+inoremap <C-h> <Left>
+inoremap <C-l> <Right>
+
+" special chars
+set ambiwidth=single
+set list
+set listchars=tab:»-,trail:-,eol:↲,extends:»,precedes:«,nbsp:%
 
 " tab
+autocmd FileType javascript  set tabstop=2 shiftwidth=2
+autocmd FileType python set tabstop=4 shiftwidth=4
+autocmd BufNewFile,BufRead *.ts set tabstop=2 shiftwidth=2
+autocmd BufNewFile,BufRead *.tsx set tabstop=2 shiftwidth=2
+autocmd FileType json set tabstop=2 shiftwidth=2
 set smarttab
 set expandtab
-set tabstop=4
-set shiftwidth=4
 set autoindent
+
+" 検索
+set incsearch " インクリメンタルサーチ. １文字入力毎に検索を行う
+set ignorecase " 検索パターンに大文字小文字を区別しない
+set smartcase " 検索パターンに大文字を含んでいたら大文字小文字を区別する
+set hlsearch " 検索結果をハイライト
+
+" コマンド補完
+set wildmenu " コマンドモードの補完
+set history=5000 " 保存するコマンド履歴の数
 
 " syntax on
 syntax on
@@ -49,8 +70,13 @@ syntax on
 " indent on
 filetype plugin indent on
 
-" line number
-set nu
+" line
+set number
+set cursorline
+hi clear CursorLine
+hi CursorLineNr term=bold cterm=bold ctermfg=yellow ctermbg=NONE
+hi LineNr term=bold ctermfg=lightgray ctermbg=234
+hi Search cterm=bold ctermfg=black
 
 " esc bind
 inoremap <silent> jj <ESC>
@@ -90,6 +116,5 @@ function! Autopep8()
     call Preserve(':silent %!autopep8 -')
 endfunction
 
-autocmd FileType python nnoremap <S-f> :call Autopep8()<CR>
+autocmd FileType python nmap <S-f> :call Autopep8()<CR>
 "Autopep8 Scripts-------------------------
-
