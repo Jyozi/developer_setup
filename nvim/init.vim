@@ -4,7 +4,7 @@ if !&compatible
 endif
 
 let g:ruby_default_path = systemlist('rbenv which ruby 2>/dev/null || which ruby')[0]
-let g:python_host_prog = $PYENV_ROOT . '/shims/python2'
+" let g:python_host_prog = $PYENV_ROOT . '/shims/python2'
 let g:python3_host_prog = $PYENV_ROOT . '/shims/python3'
 
 filetype off
@@ -38,6 +38,8 @@ set clipboard+=unnamedplus
 " move with insert mode
 inoremap <C-h> <Left>
 inoremap <C-l> <Right>
+inoremap <C-j> <Down>
+inoremap <C-k> <Up>
 
 " special chars
 set ambiwidth=single

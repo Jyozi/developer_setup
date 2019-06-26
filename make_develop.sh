@@ -36,4 +36,3 @@ elif [ -z `which apt-get` ];then
     pip install pipenv neovim isort jedi autopep8 flake8
     pip install --upgrade pip
 fi
-

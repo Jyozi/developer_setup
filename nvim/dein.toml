@@ -18,6 +18,7 @@ let g:ale_echo_msg_format = '[%linter%][%severity%][%code%] %s'
 let g:ale_sign_column_always = 1
 let g:ale_completion_enabled = 0
 let g:ale_fix_on_save = 1
+let g:ale_fix_on_insert_leave = 1
 let g:ale_linters = {
   \ 'python': ['pylint', 'flake8'],
   \ 'go': ['gofmt', 'govet', 'bingo'],
@@ -256,6 +257,11 @@ repo = 'tpope/vim-fugitive'
 [[plugins]]
 repo = 'airblade/vim-gitgutter'
 
-# 行末半角表示
 [[plugins]]
-repo = 'bronson/vim-trailing-whitespace'
+repo = 'rhysd/vim-operator-surround'
+
+[[plugins]]
+repo = 'kana/vim-operator-user'
+
+[[plugins]]
+repo = 'kana/vim-operator-replace'
