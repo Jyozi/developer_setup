@@ -49,111 +49,62 @@ nnoremap <silent> <C-n> :<C-u>ALENextWrap<CR>
 hi ALEError cterm=bold ctermfg=white ctermbg=red
 '''
 
-[[plugins]]
-repo = 'prabirshrestha/async.vim'
 
 [[plugins]]
-repo = 'prabirshrestha/asyncomplete.vim'
-depends = ['async.vim']
+repo = 'neoclide/coc.nvim'
+build = 'yarn install --frozen-lockfile'
+merge = 0
 hook_add = '''
-let g:asyncomplete_smart_completion = 1
-let g:asyncomplete_auto_popup = 1
-augroup AsynC
-  autocmd!
-  autocmd CompleteDone * if pumvisible() == 0 | pclose | endif
-augroup END
-'''
-
-[[plugins]]
-repo = 'prabirshrestha/asyncomplete-file.vim'
-depends = ['asyncomplete.vim']
-hook_add = '''
-augroup AsynCFile
-  autocmd!
-  autocmd User asyncomplete_setup call asyncomplete#register_source(asyncomplete#sources#file#get_source_options({
-    \ 'name': 'file',
-    \ 'whitelist': ['*'],
-    \ 'priority': 10,
-    \ 'completor': function('asyncomplete#sources#file#completor')
-    \ }))
-augroup END
-'''
-
-[[plugins]]
-repo = 'prabirshrestha/vim-lsp'
-depends = 'async.vim'
-on_ft = ['go', 'python', 'javascript', 'javascript.jsx', 'typescript', 'typescript.tsx']
-hook_add = '''
-if executable('bingo')
-  augroup LspGo
-    autocmd!
-    autocmd User lsp_setup call lsp#register_server({
-        \ 'name': 'go',
-        \ 'cmd': {server_info->['bingo', '-mode', 'stdio']},
-        \ 'whitelist': ['go'],
-        \ })
-    autocmd FileType go setlocal omnifunc=lsp#complete
-  augroup END
-endif
-if executable('pyls')
-  augroup LspPython
-    autocmd!
-    autocmd User lsp_setup call lsp#register_server({
-        \ 'name': 'python',
-        \ 'cmd': {server_info->['pyls']},
-        \ 'whitelist': ['python'],
-        \ })
-    autocmd FileType python setlocal omnifunc=lsp#complete
-  augroup END
-endif
-if executable('typescript-language-server')
-  augroup LspTS
-    autocmd User lsp_setup call lsp#register_server({
-      \ 'name': 'ts',
-      \ 'cmd': {server_info->[&shell, &shellcmdflag, 'typescript-language-server --stdio']},
-      \ 'root_uri':{server_info->lsp#utils#path_to_uri(lsp#utils#find_nearest_parent_file_directory(lsp#utils#get_buffer_path(), 'tsconfig.json'))},
-      \ 'whitelist': ['typescript', 'typescript.tsx']
-      \ })
-    autocmd User lsp_setup call lsp#register_server({
-      \ 'name': 'js',
-      \ 'cmd': { server_info->[&shell, &shellcmdflag, 'typescript-language-server --stdio']},
-      \ 'root_uri': { server_info->lsp#utils#path_to_uri(lsp#utils#find_nearest_parent_directory(lsp#utils#get_buffer_path(), '.git/..'))},
-      \ 'whitelist': ['javascript', 'javascript.jsx']
-      \ })
-    autocmd FileType javascript setlocal omnifunc=lsp#complete
-    autocmd FileType javascript.jsx setlocal omnifunc=lsp#complete
-    autocmd FileType typescript setlocal omnifunc=lsp#complete
-    autocmd FileType typescript.tsx setlocal omnifunc=lsp#complete
-  augroup END
-endif
 nnoremap [lsp] <Nop>
 nmap ,s [lsp]
 vmap ,s [lsp]
-nnoremap [lsp]a :<C-u>LspCodeAction<CR>
-nnoremap [lsp]D :<C-u>LspDeclaration<CR>
-nnoremap [lsp]d :<C-u>LspDefinition<CR>
-nnoremap [lsp]q :<C-u>LspDocumentDiagnostics<CR>
-nnoremap [lsp]r :<C-u>LspRename<CR>
-nnoremap [lsp]R :<C-u>LspReferences<CR>
-nnoremap [lsp]p :<C-u>LspPreviousError<CR>
-nnoremap [lsp]n :<C-u>LspNextError<CR>
-nnoremap [lsp]f :<C-u>LspDocumentFormat<CR>
-vnoremap [lsp]f :<C-u>LspDocumentRangeFormat<CR>
-nnoremap [lsp]t :<C-u>LspTypeDefinition<CR>
-nnoremap [lsp]h :<C-u>LspHover<CR>
-nnoremap [lsp]s :<C-u>LspDocumentSymbol<CR>
-nnoremap [lsp]S :<C-u>LspWorkspaceSymbol<CR>
-nnoremap [lsp]? :<C-u>LspStatus<CR>
-let g:lsp_diagnostics_enabled = 0
+nmap [lsp]i <Plug>(coc-implementation)
+nmap [lsp]d <Plug>(coc-definition)
+nmap [lsp]r <Plug>(coc-references)
+nmap [lsp]t <Plug>(coc-type-definition)
+nmap [lsp]R <Plug>(coc-rename)
+nmap [lsp]p <Plug>(coc-diagnostic-prev)
+nmap [lsp]n <Plug>(coc-diagnostic-next)
+nmap [lsp]f <Plug>(coc-format-selected)
+vmap [lsp]f <Plug>(coc-format-selected)
+nnoremap <silent> [lsp]s :call <SID>show_documentation()<CR>
+inoremap <silent><expr> <c-c> coc#refresh()
+inoremap <silent><expr> <TAB>
+  \ pumvisible() ? "\<C-n>" :
+  \ <SID>check_back_space() ? "\<TAB>" :
+  \ coc#refresh()
+inoremap <expr><S-TAB> pumvisible() ? "\<C-p>" : "\<C-h>"
+inoremap <expr> <cr> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+function! s:show_documentation()
+  if &filetype == 'vim'
+    execute 'h '.expand('<cword>')
+  else
+    call CocAction('doHover')
+  endif
+endfunction
+augroup coc
+  autocmd!
+  autocmd CursorHold * silent call CocActionAsync('highlight')
+  autocmd FileType typescript,json setl formatexpr=CocAction('formatSelected')
+  autocmd User CocJumpPlaceholder call CocActionAsync('showSignatureHelp')
+augroup END
+let g:coc_global_extensions = ["coc-json", "coc-python", "coc-emoji", "coc-tsserver"]
 '''
 
 [[plugins]]
-repo = 'prabirshrestha/asyncomplete-lsp.vim'
-depends = ['asyncomplete.vim', 'vim-lsp']
-
-[[plugins]]
-repo = 'leafgarland/typescript-vim'
-on_ft = ['typescript']
+repo = 'sheerun/vim-polyglot'
+hook_add = '''
+let g:vim_markdown_fenced_languages = ["go", "js=javascript", "ts=typescript", "coffee", "py=python", "rb=ruby", "yaml", "toml"]
+let g:vim_markdown_folding_disabled = 1
+let g:vim_markdown_conceal = 0
+let g:typescript_indent_disable = 0
+let g:vim_json_syntax_conceal = 0
+let g:jsx_ext_required = 1
+'''
 
 # 統合インターファイス
 [[plugins]]
@@ -166,45 +117,45 @@ hook_add = '''
 " 入力モードで開始する
 let g:unite_enable_start_insert=0
 
-nmap s <Nop>
-nmap sj <C-w>j
-nmap sk <C-w>k
-nmap sl <C-w>l
-nmap sh <C-w>h
-nmap sJ <C-w>J
-nmap sK <C-w>K
-nmap sL <C-w>L
-nmap sH <C-w>H
-nmap sn gt
-nmap sp gT
-nmap sr <C-w>r
-nmap s= <C-w>=
-nmap sw <C-w>w
-nmap so <C-w>_<C-w>|
-nmap sO <C-w>=
+nnoremap s <Nop>
+nnoremap sj <C-w>j
+nnoremap sk <C-w>k
+nnoremap sl <C-w>l
+nnoremap sh <C-w>h
+nnoremap sJ <C-w>J
+nnoremap sK <C-w>K
+nnoremap sL <C-w>L
+nnoremap sH <C-w>H
+nnoremap sn gt
+nnoremap sp gT
+nnoremap sr <C-w>r
+nnoremap s= <C-w>=
+nnoremap sw <C-w>w
+nnoremap so <C-w>_<C-w>|
+nnoremap sO <C-w>=
 
 " window size
-nmap s> <C-w>>
-nmap s< <C-w><
-nmap s+ <C-w>+
-nmap s- <C-w>-
+nnoremap s> <C-w>>
+nnoremap s< <C-w><
+nnoremap s+ <C-w>+
+nnoremap s- <C-w>-
 
-nmap sN :<C-u>bn<CR>
-nmap sP :<C-u>bp<CR>
-nmap st :<C-u>tabnew<CR>
-nmap sT :<C-u>Unite tab<CR>
-nmap ss :<C-u>sp<CR>
-nmap sv :<C-u>vs<CR>
-nmap sq :<C-u>q<CR>
-nmap sQ :<C-u>bd<CR>
+nnoremap sN :<C-u>bn<CR>
+nnoremap sP :<C-u>bp<CR>
+nnoremap st :<C-u>tabnew<CR>
+nnoremap sT :<C-u>Unite tab<CR>
+nnoremap ss :<C-u>sp<CR>
+nnoremap sv :<C-u>vs<CR>
+nnoremap sq :<C-u>q<CR>
+nnoremap sQ :<C-u>bd<CR>
 " バッファ一覧
-nmap sb :<C-u>Unite buffer<CR>
+nnoremap sb :<C-u>Unite buffer<CR>
 " 現在のディレクトリのファイル一覧
-nmap sf :<C-u>Unite -buffer-name=file file<CR>
+nnoremap sf :<C-u>Unite -buffer-name=file file<CR>
 " 最近使ったファイル一覧
-nmap sz :<C-u>Unite file_mru<CR>
+nnoremap sz :<C-u>Unite file_mru<CR>
 
-nmap nt :<C-u>NERDTree<CR>
+nnoremap nt :<C-u>NERDTree<CR>
 
 "" ESCキーを2回押すと終了する
 "au FileType unite nmap <silent> <buffer> <ESC><ESC> :q<CR>
@@ -214,10 +165,6 @@ nmap nt :<C-u>NERDTree<CR>
 # 木表示
 [[plugins]]
 repo = 'scrooloose/nerdtree'
-
-# tab変換の動作を逆に
-[[plugins]]
-repo = 'ervandew/supertab'
 
 # airline themes
 [[plugins]]

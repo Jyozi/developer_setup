@@ -35,6 +35,8 @@ set encoding=utf-8
 
 set clipboard+=unnamedplus
 
+nnoremap : ;
+nnoremap ; :
 " move with insert mode
 inoremap <C-h> <Left>
 inoremap <C-l> <Right>
