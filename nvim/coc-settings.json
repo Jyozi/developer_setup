@@ -1,5 +1,4 @@
 {
-  "http.proxy": "localhost:3128",
   "diagnostic.displayByAle": true,
   "languageserver": {
     "go-langserver": {
