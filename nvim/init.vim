@@ -122,3 +122,7 @@ endfunction
 
 autocmd FileType python nmap <S-f> :call Autopep8()<CR>
 "Autopep8 Scripts-------------------------
+
+" run terminal with vim
+nnoremap <Leader>t :<C-u>vs<CR><C-w>l:term<CR>i
+nnoremap <Leader>T :<C-u>term<CR>i
